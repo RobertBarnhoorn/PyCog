@@ -8,7 +8,7 @@ from time import sleep
 class NetworkInterface:
     """Defines how a Python agent communicates with the simulation"""
 
-    def __init__(self, scanner, host=socket.gethostname(), port=8080):
+    def __init__(self, scanner, host=socket.gethostname(), port=1302):
 
         self.scanner = scanner          # converts stream data to messages
         self.send_buffer = deque()      # queue of message objects to be sent

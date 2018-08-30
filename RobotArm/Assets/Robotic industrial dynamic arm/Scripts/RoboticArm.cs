@@ -5,7 +5,8 @@ using System;
 
 public class RoboticArm : MonoBehaviour {
 
-	// Use this for initialization
+	public const int QUIT = 0;
+	public const int ROTATE_JOINT = 1;
 
 	//this are the parts of the robotic arm
 	public GameObject box;
@@ -31,8 +32,9 @@ public class RoboticArm : MonoBehaviour {
 	}
 
     public void InterpretAgentMessage(TCPMessage message) {
+		print (message.id + "$" + message.getData () [0] + "$" + message.getData () [1]);
         switch (message.id) {
-		case 100: // ROTATE_JOINT
+		case ROTATE_JOINT: // ROTATE_JOINT
 			int joint = Int32.Parse (message.getData () [0]);
 			int degrees = Int32.Parse (message.getData () [1]);
 			print ("Rotating joint " + joint + " by " + degrees + " degrees.");

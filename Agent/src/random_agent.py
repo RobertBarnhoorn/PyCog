@@ -2,6 +2,7 @@ from message import Message
 from network_interface import NetworkInterface
 from message_scanner import MessageScanner
 from random import randint
+from time import sleep
 
 
 class RandomAgent:
@@ -13,7 +14,8 @@ class RandomAgent:
 
     def rotate_joint(self, joint, degrees):
         msg = Message(RandomAgent.ROTATE_JOINT)
-        msg.add_data(str(joint) + " " + str(degrees))
+        msg.add_data(str(joint))
+        msg.add_data(str(degrees) + '\n')
         return msg
 
 
@@ -29,11 +31,14 @@ if __name__ == '__main__':
             degrees = 1
         else:
             degrees = -1
-            
+
         msg_send = agent.rotate_joint(joint, degrees)
         interface.send(msg_send)
-        msg_recv = interface.receive()
-        while (msg_recv is None):
-            msg_recv = interface.receive()
+        print('sent: ', scanner.msg_to_ascii(msg_send))
+        sleep(1)
 
-        print('received: ', scanner.msg_to_ascii(msg_recv))
+        # msg_recv = interface.receive()
+        # while (msg_recv is None):
+        #     msg_recv = interface.receive()
+
+        # print('received: ', scanner.msg_to_ascii(msg_recv))

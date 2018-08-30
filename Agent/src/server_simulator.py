@@ -9,7 +9,7 @@ from message import Message
 class TestServer:
     """Used to test messaging protocol with client"""
 
-    def __init__(self, scanner, host=socket.gethostname(), port=8080):
+    def __init__(self, scanner, host=socket.gethostname(), port=1302):
         self.scanner = scanner          # converts stream data to messages
         self.send_buffer = deque()      # queue of message objects to be sent
         self.recv_buffer = deque()      # queue of message objects received

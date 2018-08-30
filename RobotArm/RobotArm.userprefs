@@ -1,6 +1,13 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Robotic industrial dynamic arm\Scripts\TCPServer.cs">
+    <Files>
+      <File FileName="Assets\Robotic industrial dynamic arm\Scripts\RoboticArm.cs" Line="29" Column="24" />
+      <File FileName="Assets\Robotic industrial dynamic arm\Scripts\TCPServer.cs" Line="62" Column="48" />
+      <File FileName="Assets\Robotic industrial dynamic arm\Scripts\TCPMessage.cs" Line="8" Column="30" />
+      <File FileName="Assets\Robotic industrial dynamic arm\Scripts\TCPMessageScanner.cs" Line="15" Column="27" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

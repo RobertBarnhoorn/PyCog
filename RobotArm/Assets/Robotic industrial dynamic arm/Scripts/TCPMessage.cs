@@ -35,7 +35,4 @@
         return output;
     }
 
-    // Constants:
-    public const int EXIT = -1;     // Exit simulation
-    public const int ROTATE_JOINT = 100;
-}
+} 
