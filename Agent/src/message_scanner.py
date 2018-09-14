@@ -21,7 +21,7 @@ class MessageScanner:
             else:
                 instr += c
 
-        id = instructions.pop(0)
+        id = int(instructions.pop(0))
 
         msg = Message(id)
         for i in range(len(instructions)):

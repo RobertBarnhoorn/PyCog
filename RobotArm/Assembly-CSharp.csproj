@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Robotic industrial dynamic arm\Scripts\BoxBehaviour.cs" />
+     <Compile Include="Assets\Robotic industrial dynamic arm\Scripts\Experiment.cs" />
      <Compile Include="Assets\Robotic industrial dynamic arm\Scripts\RoboticArm.cs" />
      <Compile Include="Assets\Robotic industrial dynamic arm\Scripts\TCPMessage.cs" />
      <Compile Include="Assets\Robotic industrial dynamic arm\Scripts\TCPMessageScanner.cs" />

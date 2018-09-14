@@ -17,79 +17,97 @@ using System.Collections;
  public class TCPServer : MonoBehaviour {
     private StreamReader reader;
     private StreamWriter writer;
-    private List<TCPMessage> message_buffer;
-
+    private Queue<TCPMessage> recv_buffer;
+	private Queue<TCPMessage> send_buffer;
     private TCPMessageScanner message_scanner;
-
-    //Will Stuff
     private TcpListener listener;
     private TcpClient client;
-    public bool serverOn = false;
 
     private int networkPort = 1302; //port used for TCP connection to the agent module
 
+
     void Awake() {
-        message_buffer = new List<TCPMessage>();
+		DontDestroyOnLoad (this);
+		if (FindObjectsOfType(GetType()).Length > 1) {
+			Destroy(gameObject);
+			return;
+		}
+
+        recv_buffer = new Queue<TCPMessage>();
+        send_buffer = new Queue<TCPMessage>();
         message_scanner = new TCPMessageScanner();
         InitializeServer();
     }
 
     void Update() {
-        if (serverOn)
+        if (client != null && !client.Connected) //if the client disconnects
         {
-            if (client != null && !client.Connected)//if the client disconnects
-            {
-                Debug.LogError("Client not connected.");
-                CleanUp();
-                Application.Quit();
-            }
+            Debug.LogError("Client not connected.");
+            CleanUp();
+            Application.Quit();
         }
     }
 
     private void InitializeServer() {
         StartServer();
-        Thread thread = new Thread(receive_messages);
-        thread.Start();
+		new Thread(receive_messages).Start();
+		new Thread(send_messages).Start();
     }
 
     private void receive_messages() {
         while (true)
         {
 			string raw_input = reader.ReadLine();
-			print ("raw_input: " + raw_input);
+			if (raw_input.Equals ("")) continue;
+            TCPMessage msg_recv = message_scanner.BuildTCPMessage(raw_input);
+			recv_buffer.Enqueue(msg_recv);
 
-            TCPMessage new_tcp_message = message_scanner.BuildTCPMessage(raw_input);
-            message_buffer.Add(new_tcp_message);
+			//print ("recv: " + raw_input);
         }
     }
 
-    public TCPMessage GetNextMessage() {
-        if (message_buffer.Count == 0) return null;
+	private void send_messages() {
+		while (true) {
+			if (send_buffer.Count > 0) {
+				TCPMessage msg = send_buffer.Dequeue ();
 
-        TCPMessage message = message_buffer[0];
-        message_buffer.RemoveAt(0);
+				int id = msg.id;
+				String data = "";
+				for (int i = 0; i < msg.getData ().Count; i++) {
+					data += "$" + msg.getData () [i];
+				}
+
+				writer.WriteLine (id + data);
+				writer.Flush ();
+
+				//print ("sent: " + id + data);
+			}
+		}
+
+	}
+
+    public TCPMessage Receive() {
+		if (recv_buffer.Count == 0) return null;
+
+		TCPMessage message = recv_buffer.Dequeue();
         return message;
     }
 
-    public void SendMessage(TCPMessage message) {
-        int id = message.id;
-        String data = "";
+	public TCPMessage BlockingReceive() {
+		TCPMessage msg = Receive ();
+		while (msg == null) {
+			msg = Receive ();
+		}
+		return msg;
+	}
 
-        for (int i = 0; i < message.getData().Count; i++)
-        {
-            data += "$" + message.getData()[i];
-        }
-
-        //Debug.Log("Out: id: " + id + " data: " + data);
-
-        writer.WriteLine(id + data);
-        writer.Flush();
+    public void SendMessage(TCPMessage msg) {
+		send_buffer.Enqueue (msg);
     }
 
     void StartServer()
     {
-        serverOn = true;
-        Debug.Log("Connecting to Java backend...");
+        Debug.Log("Connecting to agent...");
         try
         {
             listener = new TcpListener(System.Net.IPAddress.Any, networkPort);
@@ -97,7 +115,7 @@ using System.Collections;
             client = listener.AcceptTcpClient();
             reader = new StreamReader(client.GetStream());
             writer = new StreamWriter(client.GetStream());
-            Debug.Log("Java connection successful");
+            Debug.Log("Client connection successful");
         }
         catch (Exception e)
         {
@@ -115,18 +133,12 @@ using System.Collections;
 
     public void CleanUp()
     {
-        serverOn = false;
         if (client != null)
         {
             client.Close();
         }
         listener.Stop();
 
-    }
-
-    public void SetNetworkPort(int port)
-    {
-        networkPort = port;
     }
 
 }

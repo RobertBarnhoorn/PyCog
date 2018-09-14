@@ -2,43 +2,44 @@ from message import Message
 from network_interface import NetworkInterface
 from message_scanner import MessageScanner
 from random import randint
-from time import sleep
 
 
 class RandomAgent:
     """Sends random movements to robot arm"""
 
-    # the ID of the message should indicate what it is for
+    # These variables are used as IDs for messages.
+    # They indicate what the data in the message means.
     QUIT = 0
-    ROTATE_JOINT = 1
+    STATE = 1
+    ACTION = 2
+    REWARD = 3
+
+    def act(self, state):
+        action = randint(0, 7)  # Choose an action 0 to 7
+        return action
+
+    def execute(self, action):
+        """Send the action to the arm and receive the reward"""
+        self.interface.send(action)                   # send the action
+        msg_recv = self.interface.blocking_recieve()  # wait for message
+
+        if msg_recv.id != RandomAgent.REWARD:
+            print('ERROR: Expected message.id=', RandomAgent.REWARD,
+                  ' but got ', msg_recv.id)
+            return None
+
+        reward = msg_recv.data[0]
+        return reward
+
+    def observe(self, reward, terminal):
+        pass
 
     def rotate_joint(self, joint, degrees):
-        msg = Message(RandomAgent.ROTATE_JOINT)
+        msg = Message(RandomAgent.ACTION)
         msg.add_data(str(joint))
         msg.add_data(str(degrees) + '\n')
         return msg
 
 
 if __name__ == '__main__':
-    agent = RandomAgent()
-    scanner = MessageScanner()
-    interface = NetworkInterface(scanner)
-
-    while(True):
-        joint = round(randint(0, 4))  # Choose a joint between 0 and 4
-        degrees = round(randint(-1, 1))  # Random angle is -1 or 1
-        if degrees > 0:
-            degrees = 1
-        else:
-            degrees = -1
-
-        msg_send = agent.rotate_joint(joint, degrees)
-        interface.send(msg_send)
-        print('sent: ', scanner.msg_to_ascii(msg_send))
-        sleep(1)
-
-        # msg_recv = interface.receive()
-        # while (msg_recv is None):
-        #     msg_recv = interface.receive()
-
-        # print('received: ', scanner.msg_to_ascii(msg_recv))
+    arm = RandomAgent()
