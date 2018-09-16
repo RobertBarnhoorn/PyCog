@@ -37,17 +37,18 @@ public class RoboticArm : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		tick++;  // Update the count of updates that have occurred
+		/*tick++;  // Update the count of updates that have occurred
 		if (tick > TICK_MAX || terminal == 1 || next_iter == true) {
 			next_iter = true;
 			return;
-		}
-		//HandleInput(); // Keyboard control for debugging the arm's movement/angles
-		TCPMessage state = GetState();                 // Get the state
+		}*/
+		HandleInput(); // Keyboard control for debugging the arm's movement/angles
+		/*TCPMessage state = GetState();                 // Get the state
 		server.SendMessage (state);                    // Send the state
 		TCPMessage action = server.BlockingReceive();  // Wait for the chosen action from the agent
 		TCPMessage reward = Execute(action);           // Execute the action and receive reward
 		server.SendMessage (reward);                   // Send reward to agent
+		*/
 	}
 
 
@@ -155,17 +156,23 @@ public class RoboticArm : MonoBehaviour {
 
 	// Rotate part by val degrees
 	public void rotatePart1(float val) {
-		part1.Rotate(0f, 0f, val);
+		float ang = Math.Abs(part1.localRotation.eulerAngles.z);
+		if ((ang + val >= 240 && ang + val <= 360) || ((ang >= 0 && val < 0) && ang <= 20) )
+			part1.Rotate(0f, 0f, val);
 	}
 
 	// Rotate part by val degrees
 	public void rotatePart2(float val) {
-		part2.Rotate(0f, 0f, val);
+		float ang = Math.Abs(part2.localRotation.eulerAngles.z);
+		if ((ang + val >= 0 && ang + val <= 90))
+			part2.Rotate(0f, 0f, val);
 	}
 
 	// Rotate part by val degrees
 	public void rotatePart3(float val) {
-		part3.Rotate(val, 0f, 0f);
+		float ang = Math.Abs(part3.localRotation.eulerAngles.x);
+		//if ((ang + val >= 0 && ang + val <= 90))
+			part3.Rotate(val, 0f, 0f);
 	}
 
 	// Close/open grip by val degrees

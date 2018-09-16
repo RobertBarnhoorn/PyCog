@@ -1,5 +1,6 @@
-from tensorforce.agents import PPOAgent
 from tensorforce.agents import DQNAgent
+from tensorforce.agents import DQNNstepAgent
+from tensorforce.agents import VPGAgent 
 from random_agent import RandomAgent
 from network_interface import NetworkInterface
 from message_scanner import MessageScanner
@@ -43,10 +44,23 @@ class PPOArmAgent:
         #     ],
         #     batched_observe=False,
         #     batching_capacity=1,
-        #     discount=0.98
+        #     discount=0.98,
+        #     double_q_model=True
         # )
 
-        agent = RandomAgent()
+        #agent = RandomAgent()
+
+        agent = VPGAgent(
+            states=dict(type='float', shape=(10,)),
+            actions=dict(type='int', num_actions=8),
+            network=[
+                dict(type='dense', size=100),
+                dict(type='dense', size=100)
+            ],
+            batched_observe=False,
+            batching_capacity=1,
+            discount=0.98
+        )
 
         results_file = open('results.txt', 'a')  # to record fitness
         # ------- RL feedback loop -------
