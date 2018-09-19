@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/**
+ * This controls the flow of the experiment by resetting the simulation whenever the
+ * relevant Game Object (e.g. RoboticArm) sets the next_iter variable to true
+ */
 public class Experiment : MonoBehaviour {
 
-	RoboticArm arm;
-	TCPServer server;
-	int iter;  // Which iteration of training are we on 
+	RoboticArm arm;    // Game Object
+	TCPServer server;  // For communication
+	int iter;          // Which iteration of training are we on 
 
 	// Use this for initialization
 	void Awake() {

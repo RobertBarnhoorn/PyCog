@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+/**
+ * This script allows an agent running on the Q-Cog agent module 
+ * or a human with keyboard/mouse to control the robotic arm
+ */
 public class RoboticArm : MonoBehaviour {
 
-    // These variables are used as IDs for messages.
-    // They indicate what the data in the message means.
+    // These variables are used as IDs for messages
+    // They indicate how the data in the message should be interpreted
 	public const int QUIT = 0;
 	public const int STATE = 1;
 	public const int ACTION = 2;
@@ -22,37 +26,36 @@ public class RoboticArm : MonoBehaviour {
 	public Transform gripRight;
 	private TCPServer server;
 
-	public int tick;			 // Within the current iteration, how many updates have occurred
-	public bool next_iter;
-	private int terminal;
-	private const int TICK_MAX = 300;
+	public int tick;                   // Within the current iteration, how many updates have occurred
+	public bool next_iter;             // Is it time for the next iteration
+	private int terminal;              // Sent with the reward (0 = not terminal, 1 = terminal)
+	private const int TICK_MAX = 300;  // Max number of update() loops in an iteration 
 
 	void Start () {
 		terminal = 0;
 		tick = 0;
 		next_iter = false;
-		Application.runInBackground = true;
+		Application.runInBackground = true;  // Leave this on
 		server = GameObject.FindObjectOfType<TCPServer>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		/*tick++;  // Update the count of updates that have occurred
+		//HandleInput();  // Keyboard control for debugging the arm's movement/angles
+		tick++;  // Update the count of updates that have occurred
 		if (tick > TICK_MAX || terminal == 1 || next_iter == true) {
 			next_iter = true;
 			return;
-		}*/
-		HandleInput(); // Keyboard control for debugging the arm's movement/angles
-		/*TCPMessage state = GetState();                 // Get the state
+		}
+		TCPMessage state = GetState();                 // Get the state
 		server.SendMessage (state);                    // Send the state
 		TCPMessage action = server.BlockingReceive();  // Wait for the chosen action from the agent
 		TCPMessage reward = Execute(action);           // Execute the action and receive reward
 		server.SendMessage (reward);                   // Send reward to agent
-		*/
 	}
 
 
-	// Returns a message with 11 data points representing the state of the arm
+	// Returns a Message representing the state of the arm
 	public TCPMessage GetState() {
 		float jointAngle0 = part0.rotation.eulerAngles.y;
 		float jointAngle1 = part1.rotation.eulerAngles.z;
@@ -101,13 +104,13 @@ public class RoboticArm : MonoBehaviour {
 
 	public TCPMessage Reward() {
 		float distToTarget = (target.transform.position - gripLeft.transform.position).magnitude; // Distance from claw to target
-		float r = -distToTarget;
+		float r = -distToTarget;  // Reward amount
 
 		if (distToTarget < 1.0f) {
-			r += 100;
-			terminal = 1;
+			r += 100;      // Extra reward for reaching target
+			terminal = 1;  // Target reached, so terminal state
 		} else if (tick == TICK_MAX) {
-			terminal = 1;
+			terminal = 1;  // Training iteration over, so terminal state
 		}
 
 		TCPMessage reward = new TCPMessage(REWARD);
@@ -119,7 +122,11 @@ public class RoboticArm : MonoBehaviour {
 	void FixedUpdate () {
 	}
 
-	// For testing: allows arm to be controlled by mouse and keyboard
+	/** For debugging: allows arm to be controlled by mouse and keyboard
+	 * To use: comment everything in the update loop except this method
+	 * and disable the Experiment and Server Game Objects in the editor
+	 */
+
 	void HandleInput() {
 		float t = Time.deltaTime; // Used to make rotation speed frame-rate independent
 		float horizontal = Input.GetAxis("Horizontal");
@@ -156,29 +163,42 @@ public class RoboticArm : MonoBehaviour {
 
 	// Rotate part by val degrees
 	public void rotatePart1(float val) {
+		Quaternion currentRot = new Quaternion (part1.localRotation.x, part1.localRotation.y, part1.localRotation.z, part1.localRotation.w);
+		part1.Rotate(0f, 0f, val);
 		float ang = Math.Abs(part1.localRotation.eulerAngles.z);
-		if ((ang + val >= 240 && ang + val <= 360) || ((ang >= 0 && val < 0) && ang <= 20) )
-			part1.Rotate(0f, 0f, val);
+		if ((ang < 240 || ang > 360))
+			part1.localRotation = currentRot;
 	}
 
 	// Rotate part by val degrees
 	public void rotatePart2(float val) {
+		Quaternion currentRot = new Quaternion (part2.localRotation.x, part2.localRotation.y, part2.localRotation.z, part2.localRotation.w);
+		part2.Rotate(0f, 0f, val);
 		float ang = Math.Abs(part2.localRotation.eulerAngles.z);
-		if ((ang + val >= 0 && ang + val <= 90))
-			part2.Rotate(0f, 0f, val);
+		if (ang < 0 || ang > 90)
+			part2.localRotation = currentRot;
 	}
 
 	// Rotate part by val degrees
 	public void rotatePart3(float val) {
+		Quaternion currentRot = new Quaternion (part3.localRotation.x, part3.localRotation.y, part3.localRotation.z, part3.localRotation.w);
+		part3.Rotate(val, 0f, 0f);
 		float ang = Math.Abs(part3.localRotation.eulerAngles.x);
-		//if ((ang + val >= 0 && ang + val <= 90))
-			part3.Rotate(val, 0f, 0f);
+		if (ang < 20)
+			part3.localRotation = currentRot;
 	}
 
 	// Close/open grip by val degrees
 	public void grip(float val) {
+		Quaternion currentRotLeft = new Quaternion (gripLeft.localRotation.x, gripLeft.localRotation.y, gripLeft.localRotation.z, gripLeft.localRotation.w);
+		Quaternion currentRotRight= new Quaternion (gripRight.localRotation.x, gripRight.localRotation.y, gripRight.localRotation.z, gripRight.localRotation.w);
 		gripLeft.Rotate (0f, 0f, val);
 		gripRight.Rotate (0f, 0f, val);
+		float ang = Math.Abs(gripLeft.localRotation.eulerAngles.y);
+		if (ang > 30) {
+			gripLeft.localRotation = currentRotLeft;
+			gripRight.localRotation = currentRotRight;
+		}
 	}
 
 }

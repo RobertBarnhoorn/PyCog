@@ -1,6 +1,6 @@
 class Message:
-    """Represents the format a message must conform to for it to work in the
-    QCog/PyCog Platforms"""
+    """ Represents the format a message must conform to for it to work on the
+    QCog Platforms """
 
     def __init__(self, id):
         self.id = id    # id that describes how to interpret the data

@@ -5,9 +5,9 @@ from message_scanner import MessageScanner
 from time import sleep
 from message import Message
 
-# this script simulates the behaviour of the unity simulation
-# -- use for easier network debugging
 if __name__ == '__main__':
+    """ This script simulates the behaviour of the unity simulation
+    -- use for easier network debugging """
 
     scanner = MessageScanner()
     interface = NetworkInterface(scanner, server=True)
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     while (action == null):
         action = server.receive()
  
-    // Execute the action, receive reward and send it to agent
+    # Execute the action, receive reward and send it to agent
     TCPMessage reward = Execute(action);
     server.SendMessage (reward);
 

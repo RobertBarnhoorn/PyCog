@@ -19,7 +19,7 @@ class RandomAgent:
         return action
 
     def execute(self, action):
-        """Send the action to the arm and receive the reward"""
+        """ Send the action to the arm and receive the reward """
         self.interface.send(action)                   # send the action
         msg_recv = self.interface.blocking_recieve()  # wait for message
 

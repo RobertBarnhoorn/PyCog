@@ -7,9 +7,7 @@ using UnityEngine;
  */
 public class TCPMessageScanner {
 
-	public RoboticArm armController;
-
-    /* Given a string input, this method outputs a new TCPMessage object */
+    // Given a string input, this method outputs a new TCPMessage object
     public TCPMessage BuildTCPMessage(string input) {
         List<string> message_break = BreakUpData(input);
         int id = Int32.Parse(message_break[0]);
@@ -17,29 +15,22 @@ public class TCPMessageScanner {
         return new TCPMessage(id, message_break);
     }
 
-    /* Given a protocol-adhearing string, an arraylist is output containing
-        * separate data contained in the string */
+    // Given a protocol-adhearing string, an arraylist is output containing data in the string */
     private List<string> BreakUpData(string data) {
         List<string> data_break = new List<string>();
-
         string current_data = "";
-
-        for (int i = 0; i < data.Length; i++)
-        {
+        for (int i = 0; i < data.Length; i++) {
             char ch = data[i];
 
-            if (ch == '$')
-            {
+            if (ch == '$') {
                 data_break.Add(current_data);
                 current_data = "";
             }
-            else if (i == data.Length - 1)
-            {
+            else if (i == data.Length - 1) {
                 current_data += ch;
                 data_break.Add(current_data);
             }
-            else
-            {
+            else {
                 current_data += ch;
             }
         }

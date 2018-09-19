@@ -2,11 +2,7 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Robotic industrial dynamic arm\Scripts\RoboticArm.cs">
     <Files>
-      <File FileName="Assets\Robotic industrial dynamic arm\Scripts\RoboticArm.cs" Line="174" Column="3" />
-      <File FileName="Assets\Robotic industrial dynamic arm\Scripts\TCPServer.cs" Line="1" Column="1" />
-      <File FileName="Assets\Robotic industrial dynamic arm\Scripts\TCPMessageScanner.cs" Line="1" Column="1" />
-      <File FileName="Assets\Robotic industrial dynamic arm\Scripts\TCPMessage.cs" Line="1" Column="1" />
-      <File FileName="Assets\Robotic industrial dynamic arm\Scripts\Experiment.cs" Line="1" Column="1" />
+      <File FileName="Assets\Robotic industrial dynamic arm\Scripts\RoboticArm.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

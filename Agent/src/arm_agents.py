@@ -1,6 +1,4 @@
 from tensorforce.agents import DQNAgent
-from tensorforce.agents import DQNNstepAgent
-from tensorforce.agents import VPGAgent 
 from random_agent import RandomAgent
 from network_interface import NetworkInterface
 from message_scanner import MessageScanner
@@ -12,57 +10,17 @@ ACTION = 2
 REWARD = 3
 
 
-class PPOArmAgent:
+class RLAgent:
     """A controller for the robot arm"""
 
     # These variables are used as IDs for messages.
     # They indicate what the data in the message means.
 
-    def __init__(self):
+    def __init__(self, agent):
         self.scanner = MessageScanner()
         self.interface = NetworkInterface(self.scanner)
-
-        # Create a Proximal Policy Optimization agent
-        # agent = PPOAgent(
-        #     states=dict(type='float', shape=(10,)),
-        #     actions=dict(type='int', num_actions=8),
-        #     network=[
-        #         dict(type='dense', size=100),
-        #         dict(type='dense', size=100)
-        #     ],
-        #     batched_observe=False,
-        #     batching_capacity=1,
-        #     discount=0.98
-        # )
-
-        # agent = DQNAgent(
-        #     states=dict(type='float', shape=(10,)),
-        #     actions=dict(type='int', num_actions=8),
-        #     network=[
-        #         dict(type='dense', size=100),
-        #         dict(type='dense', size=100)
-        #     ],
-        #     batched_observe=False,
-        #     batching_capacity=1,
-        #     discount=0.98,
-        #     double_q_model=True
-        # )
-
-        #agent = RandomAgent()
-
-        agent = VPGAgent(
-            states=dict(type='float', shape=(10,)),
-            actions=dict(type='int', num_actions=8),
-            network=[
-                dict(type='dense', size=100),
-                dict(type='dense', size=100)
-            ],
-            batched_observe=False,
-            batching_capacity=1,
-            discount=0.98
-        )
-
         results_file = open('results.txt', 'a')  # to record fitness
+
         # ------- RL feedback loop -------
         sum_r = 0
         iter_count = 0
@@ -76,19 +34,19 @@ class PPOArmAgent:
             sum_r += reward[0]
             if reward[1]:
                 iter_count += 1
-                av = sum_r / n
-                print(iter_count, ': , ', n, ', ', av)  # print the average reward for that iteration
+                av = sum_r / n                                   # average reward received for that iteration
+                print(iter_count, ': , ', n, ', ', av)           # print the average reward for that iteration
                 results_file.write(str(n) + ',' + str(sum_r) + '\n')
-                results_file.flush()
+                results_file.flush()                             # make sure it writes in case of simulation crash
                 sum_r = 0
                 n = 0
-
         # --------------------------------
+
         results_file.close()
         agent.save_model('./saved/')
 
     def get_state(self):
-        """Gets the current state of the arm"""
+        """ Gets the current state of the arm """
         msg_recv = self.interface.blocking_recieve()  # wait for message
         if msg_recv.id != STATE:
             print('ERROR: Expected message.id=', STATE, ' but got ', msg_recv.id)
@@ -100,7 +58,7 @@ class PPOArmAgent:
         return state
 
     def execute(self, action):
-        """Send the action to the arm and receive the reward"""
+        """ Send the action to the arm and receive the reward """
         if action == 0:
             joint = 0
             degrees = 1
@@ -138,11 +96,11 @@ class PPOArmAgent:
             print('ERROR: Expected message.id=', REWARD, ' but got ', msg_recv.id)
             return None
 
-
         reward = (float(msg_recv.data[0]), bool(int(msg_recv.data[1])))
         return reward
 
     def rotate_joint(self, joint, degrees):
+        """ Return a message corresponding to a rotation """
         msg = Message(ACTION)
         msg.add_data(str(joint))
         msg.add_data(str(degrees) + '\n')
@@ -150,4 +108,45 @@ class PPOArmAgent:
 
 
 if __name__ == '__main__':
-    ppo_agent = PPOArmAgent()
+    # Create a DQN or DDQN agent
+    agent = DQNAgent(
+        states=dict(type='float', shape=(10,)),
+        actions=dict(type='int', num_actions=8),
+        network=[
+            dict(type='dense', size=100),
+            dict(type='dense', size=100)
+        ],
+        batched_observe=False,
+        batching_capacity=1,
+        discount=0.98,
+        double_q_model=False
+    )
+
+    # Create a PPO agent
+    # agent = PPOAgent(
+    #     states=dict(type='float', shape=(10,)),
+    #     actions=dict(type='int', num_actions=8),
+    #     network=[
+    #         dict(type='dense', size=100),
+    #         dict(type='dense', size=100)
+    #     ],
+    #     batched_observe=False,
+    #     batching_capacity=1,
+    #     discount=0.98
+    # )
+
+    # Create a VPG agent
+    # agent = VPGAgent(
+    #     states=dict(type='float', shape=(10,)),
+    #     actions=dict(type='int', num_actions=8),
+    #     network=[
+    #         dict(type='dense', size=100),
+    #         dict(type='dense', size=100)
+    #     ],
+    #     batched_observe=False,
+    #     batching_capacity=1,
+    #     discount=0.98
+    # )
+
+    # agent = RandomAgent()
+    controller = RLAgent(agent)

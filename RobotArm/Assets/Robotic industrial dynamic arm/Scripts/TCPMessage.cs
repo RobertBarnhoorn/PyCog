@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 /**
- * Represents the network command/message that is sent across the network between the testbed and the agent module.
+ * Represents the network message that is sent across between the Simulation Testbed and the Agent Module.
  */
  public class TCPMessage {
     public int id;

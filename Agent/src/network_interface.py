@@ -19,20 +19,17 @@ class NetworkInterface:
             self.server_socket.bind((host, port))
             self.server_socket.listen(1)  # how many agents we are expecting
             print('Listening to ', host, ' on port ', port)
-            #self.client_socket, address = self.server_socket.accept()
             self.server_socket, address = self.server_socket.accept()
             print('Connected to ', str(address))
-            # self.client_socket.close()
         else:
             self.server_socket.connect((host, port))
             print('Connected to  server ', host, ' on port ', port)
 
         Thread(target=self._send_messages).start()
         Thread(target=self._receive_messages).start()
-        #self.server_socket.close()
 
     def _send_messages(self):
-        """Continuously checks buffer for messages and sends them"""
+        """ Continuously checks buffer for messages and sends them """
         print('Ready to send...')
         while (True):
             if len(self.send_buffer) > 0:
@@ -43,9 +40,8 @@ class NetworkInterface:
                 #print('sent: ', text)
 
     def _receive_messages(self):
-        """Continuously listens for messages and adds them to the buffer"""
+        """ Continuously listens for messages and adds them to the buffer """
         print('Ready to receive...')
-        recv_count = 0
         while (True):
             data = self.server_socket.recv(4096)       # receive byte data
             text = data.decode()                       # convert data to text
@@ -54,21 +50,21 @@ class NetworkInterface:
             #print('recv: ', text)
 
     def send(self, msg):
-        """Adds a message to the send buffer. It will be sent when it reaches
-        the front of the queue"""
+        """ Adds a message to the send buffer. It will be sent when it reaches
+        the front of the queue """
         self.send_buffer.append(msg)
 
     def receive(self):
-        """Returns the first message in the receive buffer, or None if the
-        buffer is empty"""
+        """ Returns the first message in the receive buffer, or None if the
+        buffer is empty """
         if len(self.recv_buffer) > 0:
             return self.recv_buffer.popleft()
         else:
             return None
 
     def blocking_recieve(self):
-        """Returns the first message in the receive buffer, or blocks until
-        a message is received"""
+        """ Returns the first message in the receive buffer, or blocks until
+        a message is received """
         msg_recv = self.receive()
         while (msg_recv is None):
             msg_recv = self.receive()
@@ -76,6 +72,7 @@ class NetworkInterface:
 
 
 if __name__ == '__main__':
+    # The following is simply for testing
     scanner = MessageScanner()
     interface = NetworkInterface(scanner)
 
