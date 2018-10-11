@@ -1,9 +1,10 @@
 from tensorforce.agents import DQNAgent
-from random_agent import RandomAgent
 from network_interface import NetworkInterface
 from message_scanner import MessageScanner
 from message import Message
-
+import pathlib
+# These variables are used as IDs for messages.
+# They indicate what the data in the message means.
 QUIT = 0
 STATE = 1
 ACTION = 2
@@ -13,31 +14,39 @@ REWARD = 3
 class RLAgent:
     """A controller for the robot arm"""
 
-    # These variables are used as IDs for messages.
-    # They indicate what the data in the message means.
-
     def __init__(self, agent):
         self.scanner = MessageScanner()
         self.interface = NetworkInterface(self.scanner)
         results_file = open('results.txt', 'a')  # to record fitness
 
         # ------- RL feedback loop -------
+        max_av_r = -10
+        min_tick = 300
         sum_r = 0
         iter_count = 0
         n = 0
-        while(True and iter_count < 5000):
+        while(True and iter_count < 2000):
             n += 1
-            state = self.get_state()                             # get state of arm
-            action = agent.act(state)                            # choose action = joint 0,1,2,3,4
-            reward = self.execute(action)                        # execute action and observe reward
-            agent.observe(reward=reward[0], terminal=reward[1])  # add experience
+            state = self.get_state()                                # get state of arm
+            action = agent.act(state)                               # choose action = joint 0,1,2,3,4
+            reward = self.execute(action)                           # execute action and observe reward
+            agent.observe(reward=reward[0], terminal=reward[1])     # add experience
             sum_r += reward[0]
             if reward[1]:
                 iter_count += 1
-                av = sum_r / n                                   # average reward received for that iteration
-                print(iter_count, ': , ', n, ', ', av)           # print the average reward for that iteration
+                av = sum_r / n                                      # average reward received for that iteration
+                if av > max_av_r:
+                    max_av_r = av
+                    pathlib.Path('./saved/reward/' + str(iter_count)).mkdir(parents=True, exist_ok=True)
+                    agent.save_model('./saved/reward/' + str(iter_count) + '/' + str(iter_count), False)
+                if n < min_tick:
+                    min_tick = n
+                    pathlib.Path('./saved/actions/' + str(iter_count)).mkdir(parents=True, exist_ok=True)
+                    agent.save_model('./saved/actions/' + str(iter_count) + '/' + str(iter_count), False)
+
+                print(iter_count, ': , ', n, ', ', av)              # print the average reward for that iteration
                 results_file.write(str(n) + ',' + str(sum_r) + '\n')
-                results_file.flush()                             # make sure it writes in case of simulation crash
+                results_file.flush()                                # make sure it writes in case of simulation crash
                 sum_r = 0
                 n = 0
         # --------------------------------
@@ -119,7 +128,7 @@ if __name__ == '__main__':
         batched_observe=False,
         batching_capacity=1,
         discount=0.98,
-        double_q_model=False
+        double_q_model=True
     )
 
     # Create a PPO agent
