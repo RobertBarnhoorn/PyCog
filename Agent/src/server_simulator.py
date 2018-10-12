@@ -1,9 +1,5 @@
 from network_interface import NetworkInterface
-from collections import deque
-from threading import Thread
 from message_scanner import MessageScanner
-from time import sleep
-from message import Message
 
 if __name__ == '__main__':
     """ This script simulates the behaviour of the unity simulation
@@ -33,17 +29,3 @@ if __name__ == '__main__':
         print('sent: ', text)
         msg_send = scanner.ascii_to_msg(text)
         interface.send(msg_send)
-
-    # i = 0
-    # while(i < 10000):
-    #     msg_recv = interface.receive()
-    #     while (msg_recv is None):
-    #         msg_recv = interface.receive()
-
-    #     print('received: ', scanner.msg_to_ascii(msg_recv))
-
-    #     text = str(i) + '$hello client'
-    #     print('sent: ', text)
-    #     msg_send = scanner.ascii_to_msg(text)
-    #     interface.send(msg_send)
-    #     i += 1

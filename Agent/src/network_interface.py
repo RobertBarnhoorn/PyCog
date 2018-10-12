@@ -1,15 +1,12 @@
 import socket
-from message_scanner import MessageScanner
 from collections import deque
 from threading import Thread
-from time import sleep
 
 
 class NetworkInterface:
-    """Defines how a Python agent communicates with the simulation"""
+    """ Defines how a Python agent communicates with the simulation """
 
     def __init__(self, scanner, host=socket.gethostname(), port=1302, server=False):
-
         self.scanner = scanner          # converts stream data to messages
         self.send_buffer = deque()      # queue of message objects to be sent
         self.recv_buffer = deque()      # queue of message objects received
@@ -37,7 +34,6 @@ class NetworkInterface:
                 text = self.scanner.msg_to_ascii(msg)  # convert it to text
                 data = text.encode()                   # convert it to byte-data
                 self.server_socket.send(data)          # send it through socket
-                #print('sent: ', text)
 
     def _receive_messages(self):
         """ Continuously listens for messages and adds them to the buffer """
@@ -47,7 +43,6 @@ class NetworkInterface:
             text = data.decode()                       # convert data to text
             msg = self.scanner.ascii_to_msg(text)      # build message object
             self.recv_buffer.append(msg)               # add message to buffer
-            #print('recv: ', text)
 
     def send(self, msg):
         """ Adds a message to the send buffer. It will be sent when it reaches
@@ -62,30 +57,10 @@ class NetworkInterface:
         else:
             return None
 
-    def blocking_recieve(self):
+    def blocking_receive(self):
         """ Returns the first message in the receive buffer, or blocks until
         a message is received """
         msg_recv = self.receive()
         while (msg_recv is None):
             msg_recv = self.receive()
         return msg_recv
-
-
-if __name__ == '__main__':
-    # The following is simply for testing
-    scanner = MessageScanner()
-    interface = NetworkInterface(scanner)
-
-    i = 0
-    while(i < 10000):
-        text = str(i) + '$hello server'
-        print('sent: ', text)
-        msg_send = scanner.ascii_to_msg(text)
-        interface.send(msg_send)
-
-        msg_recv = interface.receive()
-        while (msg_recv is None):
-            msg_recv = interface.receive()
-
-        print('received: ', scanner.msg_to_ascii(msg_recv))
-        i += 1

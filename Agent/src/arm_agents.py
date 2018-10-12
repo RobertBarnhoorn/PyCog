@@ -3,29 +3,33 @@ from network_interface import NetworkInterface
 from message_scanner import MessageScanner
 from message import Message
 import pathlib
-# These variables are used as IDs for messages.
-# They indicate what the data in the message means.
+
+
+# These constants are used as IDs for messages
+# They indicate what the data in the message means
 QUIT = 0
 STATE = 1
 ACTION = 2
 REWARD = 3
 
-
 class RLAgent:
-    """A controller for the robot arm"""
+    """ A controller for the robot arm """
 
     def __init__(self, agent):
-        self.scanner = MessageScanner()
-        self.interface = NetworkInterface(self.scanner)
-        results_file = open('results.txt', 'a')  # to record fitness
+        self.interface = NetworkInterface(MessageScanner())
+        self.results = open('results.txt', 'a')
+        self.run(agent)
+        self.results.close()
+        agent.save_model('./saved/')
 
-        # ------- RL feedback loop -------
+    def run(self, agent):
+        """ RL feedback loop """
         max_av_r = -10
         min_tick = 300
         sum_r = 0
         iter_count = 0
         n = 0
-        while(True and iter_count < 2000):
+        while(iter_count < 2000):
             n += 1
             state = self.get_state()                                # get state of arm
             action = agent.act(state)                               # choose action = joint 0,1,2,3,4
@@ -45,18 +49,14 @@ class RLAgent:
                     agent.save_model('./saved/actions/' + str(iter_count) + '/' + str(iter_count), False)
 
                 print(iter_count, ': , ', n, ', ', av)              # print the average reward for that iteration
-                results_file.write(str(n) + ',' + str(sum_r) + '\n')
-                results_file.flush()                                # make sure it writes in case of simulation crash
+                self.results.write(str(n) + ',' + str(sum_r) + '\n')
+                self.results.flush()
                 sum_r = 0
                 n = 0
-        # --------------------------------
-
-        results_file.close()
-        agent.save_model('./saved/')
 
     def get_state(self):
         """ Gets the current state of the arm """
-        msg_recv = self.interface.blocking_recieve()  # wait for message
+        msg_recv = self.interface.blocking_receive()  # wait for message
         if msg_recv.id != STATE:
             print('ERROR: Expected message.id=', STATE, ' but got ', msg_recv.id)
             return None
@@ -95,11 +95,10 @@ class RLAgent:
         else:
             joint = 0
             degrees = 1
-            print('ERRO ACTION WAS: ', action)
 
         msg_send = self.rotate_joint(joint, degrees)
         self.interface.send(msg_send)                 # send the action
-        msg_recv = self.interface.blocking_recieve()  # wait for message
+        msg_recv = self.interface.blocking_receive()  # wait for message
 
         if msg_recv.id != REWARD:
             print('ERROR: Expected message.id=', REWARD, ' but got ', msg_recv.id)
@@ -117,7 +116,7 @@ class RLAgent:
 
 
 if __name__ == '__main__':
-    # Create a DQN or DDQN agent
+    # Create a DQN agent
     agent = DQNAgent(
         states=dict(type='float', shape=(10,)),
         actions=dict(type='int', num_actions=8),
@@ -131,31 +130,4 @@ if __name__ == '__main__':
         double_q_model=True
     )
 
-    # Create a PPO agent
-    # agent = PPOAgent(
-    #     states=dict(type='float', shape=(10,)),
-    #     actions=dict(type='int', num_actions=8),
-    #     network=[
-    #         dict(type='dense', size=100),
-    #         dict(type='dense', size=100)
-    #     ],
-    #     batched_observe=False,
-    #     batching_capacity=1,
-    #     discount=0.98
-    # )
-
-    # Create a VPG agent
-    # agent = VPGAgent(
-    #     states=dict(type='float', shape=(10,)),
-    #     actions=dict(type='int', num_actions=8),
-    #     network=[
-    #         dict(type='dense', size=100),
-    #         dict(type='dense', size=100)
-    #     ],
-    #     batched_observe=False,
-    #     batching_capacity=1,
-    #     discount=0.98
-    # )
-
-    # agent = RandomAgent()
     controller = RLAgent(agent)

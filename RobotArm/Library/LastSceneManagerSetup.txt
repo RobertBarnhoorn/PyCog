@@ -1,4 +1,0 @@
-sceneSetups:
-- path: Assets/Robotic industrial dynamic arm/Scenes/RobotBoxScene.unity
-  isLoaded: 1
-  isActive: 1
